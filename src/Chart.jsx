@@ -1,155 +1,176 @@
 import * as d3 from "d3";
 import { useEffect, useRef } from 'react';
 
+
 export function Chart({ data }) {
-    const svgRef = useRef(null);
-    
-    // Constants for the visualization
-    const marginLeft = 200;
-    const width = 800;
-    const height = 600;
-    const marginRight = 40;
-    const marginTop = 20;
-    const marginBottom = 20;
-    const heightBound = height - marginTop - marginBottom;
-    const widthBound = width - marginLeft - marginRight;
+  const marginLeft = 200;
+  const width = 800;
+  const height = 500;
+  const marginRight = 40;
+  const marginTop = 20;
+  const marginBottom = 40;
 
-    useEffect(() => {
-      if (!data) return;
+  const heightBound = height - marginTop - marginBottom;
+  const widthBound = width - marginLeft - marginRight;
 
-      // Define top 10 countries by land area
-      const topCountries = [
-          { name: "Russian Federation", code: "RUS" },
-          { name: "Canada", code: "CAN" },
-          { name: "United States", code: "USA" },
-          { name: "China", code: "CHN" },
-          { name: "Brazil", code: "BRA" },
-          { name: "Australia", code: "AUS" },
-          { name: "India", code: "IND" },
-          { name: "Argentina", code: "ARG" },
-          { name: "Kazakhstan", code: "KAZ" },
-          { name: "Algeria", code: "DZA" }
-      ];
+  // Define top 10 countries by land area with their land areas in km²
+  const topCountries = [
+    { name: "Russian Federation", code: "RUS", landrea: 17098242 },
+    { name: "Canada", code: "CAN", landarea: 9984670 },
+    { name: "United States", code: "USA", landarea: 9525067 },
+    { name: "China", code: "CHN", landarea: 9596961 },
+    { name: "Brazil", code: "BRA", landarea: 8515767 },
+    { name: "Australia", code: "AUS", landarea: 7692024 },
+    { name: "India", code: "IND", landarea: 3287263 },
+    { name: "Argentina", code: "ARG", landarea: 2780400 },
+    { name: "Kazakhstan", code: "KAZ", landarea: 2724900 },
+    { name: "Algeria", code: "DZA", landarea: 2381741 }
+  ];
 
-      // Process data to get rounded percentage values for 2016 and 2022 for top 10 land countries
-      const processedData = topCountries.map(country => {
-          const countryData = data.find(d => d["Country Code"] === country.code);
-          return {
-              country: country.name,
-              start: countryData ? Math.round(+countryData["2016"] || 0) : 0,
-              end: countryData ? Math.round(+countryData["2022"] || 0) : 0
-          };
-      });
+  // Process data
+  const processedData = topCountries.map(country => {
+      const countryData = data.find(d => d["Country Code"] === country.code);
+      return {
+          country: country.name,
+          start: countryData ? Math.round(+countryData["2016"] || 0) : 0,
+          end: countryData ? Math.round(+countryData["2022"] || 0) : 0
+      };
+  });
 
-      // Clear previous content
-      d3.select(svgRef.current).selectAll("*").remove();
+  console.log('Data :', processedData);
 
-      // Create SVG
-      const svg = d3.select(svgRef.current)
-          .append("g")
-          .attr("transform", `translate(${marginLeft}, ${marginTop})`);
+  // Scales
+  const maxX = d3.max(processedData, d => Math.max(d.start, d.end))+ 5;
 
-      // Create scales
-      const xScale = d3.scaleLinear()
-          .domain([0, 40])  // 0% to 40%, Values aren't higher than 35%
-          .range([0, widthBound]);
+  const xScale = d3.scaleLinear()
+      .domain([0, maxX])
+      .range([0, widthBound]);
 
-      const yScale = d3.scaleBand()
-          .domain(topCountries.map(d => d.name))
-          .range([0, heightBound])
-          .padding(0.1);
+  const yScale = d3.scaleBand()
+      .domain(topCountries.map((d) => d.name))
+      .range([0, heightBound])
+      .padding(0.6);
 
-      // Add vertical gridlines
-      svg.append("g")
-          .attr("class", "grid")
-          .selectAll("line")
-          .data(xScale.ticks(10))
-          .join("line")
-          .attr("x1", d => xScale(d))
-          .attr("x2", d => xScale(d))
-          .attr("y1", 0)
-          .attr("y2", heightBound)
-          .style("stroke", "#e0e0e0")
-          .style("stroke-width", 0.5);
+  // Generate X ticks
+  const xTicks = xScale.ticks(10).map(tick => (
+      <g key={tick} transform={`translate(${marginLeft + xScale(tick)},${marginTop + heightBound})`}>
+          <line y2="6" stroke="black" />
+          <text dy="2em" textAnchor="middle" fontSize="12">
+              {tick}%
+          </text>
+      </g>
+  ));
 
-      // Add X axis
-      svg.append("g")
-          .attr("transform", `translate(0,${heightBound})`)
-          .call(d3.axisBottom(xScale)
-              .ticks(10)
-              .tickFormat(d => d + "%"));
+  // Generate Y ticks
+  const yTicks = yScale.domain().map(tick => (
+      <g key={tick} transform={`translate(${marginLeft},${marginTop + yScale(tick) + yScale.bandwidth()/2})`}>
+          <line x2="-6" stroke="black" />
+          <text dx="-10" dy="0.3em" textAnchor="end" fontSize="12">
+              {tick}
+          </text>
+      </g>
+  ));
 
-      // Add Y axis
-      svg.append("g")
-          .call(d3.axisLeft(yScale));
-
-      // Add connecting bars and diamonds
-      processedData.forEach(d => {
-          const y = yScale(d.country);
-          const barHeight = yScale.bandwidth();
-
-          // Connecting bar
-          svg.append("line")
-              .attr("x1", xScale(d.start))
-              .attr("x2", xScale(d.end))
-              .attr("y1", y + barHeight/2)  // Center of the band
-              .attr("y2", y + barHeight/2)  // Center of the band
-              .style("stroke", "#ef4444")
-              .style("opacity", 0.2)
-              .style("stroke-width", barHeight/10);  // Make the line thinner than the full band
-
-          // 2016 diamond
-          svg.append("path")
-              .attr("d", d3.symbol().type(d3.symbolDiamond).size(50))
-              .attr("transform", `translate(${xScale(d.start)},${y + barHeight/2})`)
-              .style("fill", "#ef4444")
-              .style("opacity", 0.4);
-
-          // 2022 diamond
-          svg.append("path")
-              .attr("d", d3.symbol().type(d3.symbolDiamond).size(100))
-              .attr("transform", `translate(${xScale(d.end)},${y + barHeight/2})`)
-              .style("fill", "#ef4444");
-      });
-
-      // Add legend
-      const legend = svg.append("g")
-          .attr("transform", `translate(${widthBound - 100}, 0)`);
-
-      // 2016 legend item
-      legend.append("path")
-          .attr("d", d3.symbol().type(d3.symbolDiamond).size(50))
-          .style("fill", "#ef4444")
-          .style("opacity", 0.4);
-
-      legend.append("text")
-          .attr("x", 15)
-          .attr("y", 5)
-          .text("2016");
-
-      // 2022 legend item
-      legend.append("path")
-          .attr("d", d3.symbol().type(d3.symbolDiamond).size(100))
-          .attr("transform", "translate(0,25)")
-          .style("fill", "#ef4444");
-
-      legend.append("text")
-          .attr("x", 15)
-          .attr("y", 30)
-          .text("2022");
-
-  }, [data]);
+  // Generate gridlines
+  const gridLines = xScale.ticks(10).map(tick => (
+      <line
+          key={tick}
+          x1={marginLeft + xScale(tick)}
+          x2={marginLeft + xScale(tick)}
+          y1={marginTop}
+          y2={marginTop + heightBound}
+          stroke="#e0e0e0"
+          strokeWidth={0.5}
+      />
+  ));
 
   return (
-        <div>
-            <h3 style={{ 
-                textAlign: 'center', 
-                marginBottom: '20px'  // Adds space between title and SVG
-            }}>
-                Terrestrial and Marine Protected Areas (2016-2022)
-            </h3>
-            <svg ref={svgRef} width={width} height={height}></svg>
-        </div>
+      <div>
+          <h4 style={{ 
+                textAlign: 'left',
+                marginLeft: marginLeft
+          }}>
+              Change in Terrestrial and Marine Protected Areas (2016-2022)
+          </h4>
+          <p style={{
+              textAlign: 'left',
+              marginLeft: marginLeft,
+              marginBottom: '20px'
+          }}>
+              Top 10 Countries in Land Area
+          </p>
+          <svg width={width} height={height}>
+              {/* Gridlines */}
+              {gridLines}
+
+              {/* Lines and Diamonds */}
+              {processedData.map((d, i) => (
+                  <g key={i}>
+                      {/* Connecting line */}
+                      <line
+                          x1={marginLeft + xScale(d.start)}
+                          x2={marginLeft + xScale(d.end)}
+                          y1={marginTop + yScale(d.country) + yScale.bandwidth()/2}
+                          y2={marginTop + yScale(d.country) + yScale.bandwidth()/2}
+                          stroke="#00AFB5"
+                          strokeWidth={yScale.bandwidth()/10}
+                          opacity={0.2}
+                      />
+                      {/* 2016 diamond */}
+                      <path
+                          d={d3.symbol().type(d3.symbolDiamond).size(50)()}
+                          transform={`translate(${marginLeft + xScale(d.start)},
+                            ${marginTop + yScale(d.country) + yScale.bandwidth()/2})`}
+                          fill="#00AFB5"
+                          opacity={0.4}
+                      />
+                      {/* 2022 diamond */}
+                      <path
+                          d={d3.symbol().type(d3.symbolDiamond).size(100)()}
+                          transform={`translate(${marginLeft + xScale(d.end)},
+                          ${marginTop + yScale(d.country) + yScale.bandwidth()/2})`}
+                          fill="#00AFB5"
+                      />
+                  </g>
+              ))}
+
+              {/* X - Axis */}
+              <line
+                x1={marginLeft}
+                x2={marginLeft + widthBound}
+                y1={marginTop + heightBound}
+                y2={marginTop + heightBound}
+                stroke="black"
+              />
+              {xTicks}
+
+              {/* Y - Axis */}
+              <line
+                x1={marginLeft}
+                x2={marginLeft}
+                y1={marginTop}
+                y2={marginTop + heightBound}
+                stroke="black"
+              />
+              {yTicks}
+
+              {/* Legend */}
+              <g transform={`translate(${marginLeft + widthBound - 50},${marginTop})`}>
+                  <path
+                      d={d3.symbol().type(d3.symbolDiamond).size(50)()}
+                      fill="#00AFB5"
+                      opacity={0.4}
+                  />
+                  <text x={15} y={5}>2016</text>
+                  <path
+                      d={d3.symbol().type(d3.symbolDiamond).size(100)()}
+                      transform="translate(0,25)"
+                      fill="#00AFB5"
+                  />
+                  <text x={15} y={30}>2022</text>
+              </g>
+          </svg>
+      </div>
   );
 }
 
