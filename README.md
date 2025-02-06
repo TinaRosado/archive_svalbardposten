@@ -15,10 +15,10 @@ Source Description: "Terrestrial protected areas are totally or partially protec
 The visualization employs several design elements to effectively communicate the data:
 
 X-axis: 
-Linear scale from 0% to max % value, gridlines at 5% intervals, and percentage labels
+- Linear scale from 0% to max % value, gridlines at 5% intervals, and percentage labels
 
 Y-axis: 
-Countries arranged in descending order by land area, Russia at the top (17,098,242 km²) and Algeria at the bottom (2,381,741 km²). Distributed along the axis using band scale.
+- Countries arranged in descending order by land area, Russia at the top (17,098,242 km²) and Algeria at the bottom (2,381,741 km²). Distributed along the axis using band scale.
 
 Visual Elements:
 - Light turquoise diamonds: 2016 values (serving as reference points)
@@ -35,8 +35,6 @@ Analysis of the visualization reveals several interesting patterns:
 - The United States shows the most dramatic change, with a significant decrease in protected areas
 - Brazil and Australia maintain the highest percentages of protected areas among the top 10
 - India and Algeria have the lowest percentages, both under 5%
-- Most countries show relatively stable values, with changes of less than 5 percentage points
-- Only a few countries show substantial increases in protected areas
 
 ## Country Land Area Reference
 The countries are listed in descending order by land area (km²), data taken from Wikipedia (https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_area):
