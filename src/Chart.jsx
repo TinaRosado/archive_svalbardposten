@@ -17,13 +17,13 @@ export function Chart({ data }) {
   const topCountries = [
     { name: "Russian Federation", code: "RUS", landrea: 17098242 },
     { name: "Canada", code: "CAN", landarea: 9984670 },
-    { name: "United States", code: "USA", landarea: 9525067 },
-    { name: "China", code: "CHN", landarea: 9596961 },
-    { name: "Brazil", code: "BRA", landarea: 8515767 },
-    { name: "Australia", code: "AUS", landarea: 7692024 },
+    { name: "United States", code: "USA", landarea: 9596960 },
+    { name: "China", code: "CHN", landarea: 9596960 },
+    { name: "Brazil", code: "BRA", landarea: 85110346 },
+    { name: "Australia", code: "AUS", landarea: 7741220 },
     { name: "India", code: "IND", landarea: 3287263 },
     { name: "Argentina", code: "ARG", landarea: 2780400 },
-    { name: "Kazakhstan", code: "KAZ", landarea: 2724900 },
+    { name: "Kazakhstan", code: "KAZ", landarea: 2724910 },
     { name: "Algeria", code: "DZA", landarea: 2381741 }
   ];
 
